@@ -8,7 +8,7 @@
 [![Compliance](https://img.shields.io/badge/Compliance-India%20DPDP%20Act%202023%20%7C%20GDPR-success.svg)](https://www.meity.gov.in/)
 [![Evaluation Tests](https://img.shields.io/badge/Benchmark-20%2F20%20(100%25%20Passing)-brightgreen.svg)]()
 
-> **An intelligent, client-side privacy gateway and multimodal firewall that intercepts, classifies, and redacts sensitive Indian & international personal data before it ever reaches Generative AI models — and audits AI responses to prevent data leaks.**
+> **A client-side multimodal privacy gateway for Generative AI that intercepts, classifies, and redacts sensitive PII across text and image OCR inputs — with automated response auditing to prevent data leaks.**
 
 ---
 
