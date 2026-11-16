@@ -1,0 +1,44 @@
+[
+  {
+    "id": "EVAL_001",
+    "prompt": "Write a formal leave email for employee Vikram Seth, email vikram.s@company.in, phone 9123456789.",
+    "expectedEntities": [
+      { "type": "PERSON", "value": "Vikram Seth" },
+      { "type": "EMAIL", "value": "vikram.s@company.in" },
+      { "type": "PHONE", "value": "9123456789" }
+    ]
+  },
+  {
+    "id": "EVAL_002",
+    "prompt": "Verify PAN card ABCDE9999Z and Aadhaar 987654321098 for Priya Sharma.",
+    "expectedEntities": [
+      { "type": "PAN", "value": "ABCDE9999Z" },
+      { "type": "AADHAAR", "value": "987654321098" },
+      { "type": "PERSON", "value": "Priya Sharma" }
+    ]
+  },
+  {
+    "id": "EVAL_003",
+    "prompt": "Pay bill using UPI user@paytm or netbanking account 123456789012 with IFSC SBIN0001234.",
+    "expectedEntities": [
+      { "type": "UPI", "value": "user@paytm" },
+      { "type": "BANK_ACCOUNT", "value": "123456789012" },
+      { "type": "IFSC", "value": "SBIN0001234" }
+    ]
+  },
+  {
+    "id": "EVAL_004",
+    "prompt": "How does photosynethsis work in green plants?",
+    "expectedEntities": []
+  },
+  {
+    "id": "EVAL_005",
+    "prompt": "Call Dr. Rajesh Gupta at +91 9876543210 regarding prescription at Apollo Hospital Delhi.",
+    "expectedEntities": [
+      { "type": "PERSON", "value": "Rajesh Gupta" },
+      { "type": "PHONE", "value": "+91 9876543210" },
+      { "type": "ORGANIZATION", "value": "Apollo Hospital" },
+      { "type": "ADDRESS", "value": "Delhi" }
+    ]
+  }
+]

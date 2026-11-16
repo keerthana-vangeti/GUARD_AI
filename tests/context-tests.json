@@ -1,0 +1,30 @@
+[
+  {
+    "id": "CTX_001",
+    "prompt": "Write a leave email from Rahul Sharma (rahul@example.com) to manager due to fever.",
+    "entities": ["PERSON", "EMAIL"],
+    "expectedNecessity": {
+      "PERSON": true,
+      "EMAIL": false
+    },
+    "reasoning": "Name is required for email signature, but recipient email is not strictly needed by AI to draft content."
+  },
+  {
+    "id": "CTX_002",
+    "prompt": "Calculate income tax for PAN ABCDE1234F earning 12 Lakhs annual salary.",
+    "entities": ["PAN"],
+    "expectedNecessity": {
+      "PAN": false
+    },
+    "reasoning": "PAN card number is a sensitive ID and completely unnecessary for mathematical tax calculation."
+  },
+  {
+    "id": "CTX_003",
+    "prompt": "Summarize medical report for patient Priya Patel with blood pressure 140/90.",
+    "entities": ["PERSON"],
+    "expectedNecessity": {
+      "PERSON": false
+    },
+    "reasoning": "Patient name is not required to summarize medical diagnosis or recommendations."
+  }
+]

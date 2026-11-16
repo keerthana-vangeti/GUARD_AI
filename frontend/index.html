@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Context-Aware Sensitive Prompt Guard — a privacy/security layer that detects, classifies, and sanitizes sensitive information before it reaches Generative AI.">
+    <title>Context-Aware Sensitive Prompt Guard for GenAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 28'><path d='M12 1L2 5V13C2 20 6.5 25.5 12 27C17.5 25.5 22 20 22 13V5L12 1Z' fill='%23ef4444' stroke='%23fca5a5'/></svg>">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ===== HEADER ===== -->
+    <header id="app-header">
+        <div class="header-content">
+            <div class="header-brand">
+                <div class="shield-icon">
+                    <!-- Red Shield SVG -->
+                    <svg width="36" height="40" viewBox="0 0 24 28" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.65)); vertical-align: middle;">
+                        <path d="M12 1L2 5V13C2 20 6.5 25.5 12 27C17.5 25.5 22 20 22 13V5L12 1Z" fill="url(#red_shield_grad)" stroke="#fca5a5" stroke-width="1.2"/>
+                        <path d="M12 4L4.5 7V13C4.5 18 7.5 22.5 12 24C16.5 22.5 19.5 18 19.5 13V7L12 4Z" fill="#dc2626" opacity="0.9"/>
+                        <path d="M12 5V23C15.5 21.5 18 17.5 18 13V7.5L12 5Z" fill="#ef4444"/>
+                        <defs>
+                            <linearGradient id="red_shield_grad" x1="2" y1="1" x2="22" y2="27" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#ef4444"/>
+                                <stop offset="1" stop-color="#991b1b"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div>
+                    <h1 id="app-title">Context-Aware Sensitive Prompt Guard</h1>
+                    <p class="subtitle">Protect sensitive information before it reaches GenAI.</p>
+                </div>
+            </div>
+            <nav class="header-nav">
+                <button class="nav-btn active" data-tab="main" id="nav-main">Guard</button>
+                <button class="nav-btn" data-tab="evaluation" id="nav-eval">Evaluation</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ===== MAIN TAB ===== -->
+    <main id="tab-main" class="tab-content active">
+        <!-- Privacy Mode Selector -->
+        <section class="mode-selector-bar" id="mode-selector">
+            <span class="mode-label">Privacy Mode:</span>
+            <div class="mode-buttons">
+                <button class="mode-btn" data-mode="basic" id="mode-basic">
+                    <span class="mode-dot green"></span> Basic
+                </button>
+                <button class="mode-btn active" data-mode="balanced" id="mode-balanced">
+                    <span class="mode-dot yellow"></span> Balanced
+                </button>
+                <button class="mode-btn" data-mode="strict" id="mode-strict">
+                    <span class="mode-dot red"></span> Strict
+                </button>
+            </div>
+            <button class="clear-btn" id="btn-clear-data" title="Clear all sensitive data">
+                🗑️ Clear Sensitive Data
+            </button>
+        </section>
+
+        <!-- Input Section -->
+        <section class="input-section" id="input-section">
+            <div class="input-card">
+                <label for="prompt-input" class="input-label">Enter your prompt</label>
+                <textarea id="prompt-input" class="prompt-textarea"
+                    placeholder="e.g. Write a leave email to my professor. My name is Rahul, my phone is 9876543210 and my PAN is ABCDE1234F."
+                    rows="5" maxlength="10000"></textarea>
+                <div class="image-attached-container hidden" id="image-attached-card">
+                    <div class="image-attached-header">
+                        <div class="image-attached-title-group">
+                            <span class="image-attached-badge">📷 Attached Images (<span id="image-count">0</span>/5)</span>
+                            <span id="image-status" class="image-status">Scanned for privacy</span>
+                        </div>
+                        <button class="btn btn-sm btn-danger-outline" id="btn-remove-image" type="button">✕ Remove All</button>
+                    </div>
+                    <div class="image-grid" id="image-items-list">
+                        <!-- Populated dynamically with uploaded image cards -->
+                    </div>
+                </div>
+
+                <div class="input-meta">
+                    <span id="char-count">0 / 10,000</span>
+                    <span id="ner-status" class="ner-badge loading" title="NER model status">NER: Loading…</span>
+                </div>
+                <div class="input-actions">
+                    <button class="btn btn-primary" id="btn-analyze">
+                        <span class="btn-icon">🔍</span> Analyze Privacy
+                    </button>
+                    <label class="btn btn-secondary" id="btn-upload-label" for="image-upload">
+                        <span class="btn-icon">📷</span> Attach Images (Up to 5)
+                    </label>
+                    <input type="file" id="image-upload" accept="image/*" multiple hidden>
+                </div>
+            </div>
+            <!-- OCR Preview -->
+            <div class="ocr-preview hidden" id="ocr-preview">
+                <h3>📄 OCR Privacy Scan Result</h3>
+                <pre id="ocr-text"></pre>
+            </div>
+        </section>
+
+        <!-- Loading State -->
+        <section class="loading-section hidden" id="loading-section">
+            <div class="loader-card">
+                <div class="spinner"></div>
+                <p id="loading-message">Analyzing your prompt for sensitive information…</p>
+            </div>
+        </section>
+
+        <!-- ===== ANALYSIS RESULTS ===== -->
+        <section class="results-section hidden" id="results-section">
+
+            <!-- Step 1: Image Content Analysis (Shows when images are attached) -->
+            <div class="result-card hidden" id="image-analysis-card">
+                <h2 class="card-title">
+                    <span class="step-badge">📸</span> Step 1: Image Content Analysis
+                </h2>
+                <p class="card-desc">Extracted content, text layout, and structural details analyzed from your attached image(s) prior to privacy checking.</p>
+                <div id="image-analysis-list" class="image-analysis-list">
+                    <!-- Populated dynamically with extracted content per image -->
+                </div>
+            </div>
+
+            <!-- Step 2: Privacy Check & Detection -->
+            <div class="result-card" id="detection-card">
+                <h2 class="card-title">
+                    <span class="step-badge">🔒</span> Step 2: Privacy Check & Sensitive Data Detection
+                </h2>
+                <p class="card-desc">Local privacy detectors scanned the prompt and extracted image contents. Review any identified sensitive entities below.</p>
+                <div id="detection-list" class="detection-list">
+                    <!-- Populated dynamically -->
+                </div>
+                <div id="no-detection-msg" class="no-detection hidden">
+                    <span class="check-icon">✅</span>
+                    <p>No sensitive information detected in prompt or image content. Ready to send safely.</p>
+                </div>
+            </div>
+
+            <!-- Step 2: Context Analysis -->
+            <div class="result-card hidden" id="context-card">
+                <h2 class="card-title">
+                    <span class="step-badge">2</span> Context Analysis
+                </h2>
+                <p class="card-desc">Analyzing whether each detected entity is actually necessary for your specific task.</p>
+                <div id="context-list" class="context-list">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Step 3: User Control -->
+            <div class="result-card hidden" id="control-card">
+                <h2 class="card-title">
+                    <span class="step-badge">3</span> Your Decision
+                </h2>
+                <p class="card-desc">You have final control. Choose how each entity should be handled.</p>
+                <div id="control-list" class="control-list">
+                    <!-- Populated dynamically -->
+                </div>
+                <div class="control-actions">
+                    <button class="btn btn-primary" id="btn-apply-decisions">
+                        Apply Decisions & Sanitize
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Sanitized Prompt -->
+            <div class="result-card hidden" id="sanitized-card">
+                <h2 class="card-title">
+                    <span class="step-badge">4</span> Sanitized Prompt
+                </h2>
+                <p class="card-desc">This is the exact prompt that will be sent to the AI. Review it carefully.</p>
+                <div class="sanitized-prompt-box">
+                    <pre id="sanitized-prompt-text"></pre>
+                </div>
+                <!-- Security Checklist -->
+                <div class="security-checklist" id="security-checklist">
+                    <h3>Security Checks</h3>
+                    <ul id="security-checks">
+                        <!-- Populated dynamically -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Step 5: External Processing Consent -->
+            <div class="result-card hidden" id="consent-card">
+                <h2 class="card-title">
+                    <span class="step-badge">5</span> External Processing Consent
+                </h2>
+                <div class="consent-summary" id="consent-summary">
+                    <!-- Populated dynamically -->
+                </div>
+                <div class="consent-actions">
+                    <button class="btn btn-primary" id="btn-consent-allow">
+                        ✅ Allow & Continue
+                    </button>
+                    <button class="btn btn-secondary" id="btn-consent-cancel">
+                        ❌ Cancel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 6: AI Response -->
+            <div class="result-card hidden" id="response-card">
+                <h2 class="card-title">
+                    <span class="step-badge">6</span> AI Response
+                </h2>
+                <!-- Output Privacy Alert -->
+                <div class="output-alert hidden" id="output-alert">
+                    <div class="alert-header">
+                        <span>⚠️ Sensitive information detected in AI response</span>
+                    </div>
+                    <div id="output-alert-details"></div>
+                    <div class="alert-actions">
+                        <button class="btn btn-sm btn-warning" id="btn-output-mask">Mask</button>
+                        <button class="btn btn-sm btn-secondary" id="btn-output-review">Review</button>
+                        <button class="btn btn-sm btn-danger" id="btn-output-block">Block</button>
+                    </div>
+                </div>
+                <div class="response-box">
+                    <div id="ai-response-text" class="ai-response"></div>
+                </div>
+                <div class="response-meta" id="response-meta">
+                    <!-- Restoration info -->
+                </div>
+                <!-- Follow-up Question UI -->
+                <div class="followup-card" id="followup-card">
+                    <label for="followup-input" class="input-label">💬 Ask a question or follow-up about this image/prompt</label>
+                    <div class="followup-row">
+                        <input type="text" id="followup-input" class="followup-input" placeholder="e.g. What are the key details in this document?">
+                        <button class="btn btn-primary" id="btn-send-followup">Ask AI</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Privacy Audit Panel -->
+            <div class="result-card" id="audit-card">
+                <h2 class="card-title collapsible" id="audit-toggle">
+                    📋 Privacy Audit Log
+                    <span class="collapse-icon">▼</span>
+                </h2>
+                <div class="audit-content hidden" id="audit-content">
+                    <div id="audit-log"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Fail-Closed Alert -->
+        <section class="fail-closed-alert hidden" id="fail-closed-alert">
+            <div class="fail-card">
+                <h2>🚫 Privacy Verification Failed</h2>
+                <p>Your prompt was <strong>not sent</strong> to the external AI. A critical privacy component encountered an error.</p>
+                <p id="fail-reason"></p>
+                <button class="btn btn-secondary" id="btn-fail-retry">Retry</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- ===== EVALUATION TAB ===== -->
+    <main id="tab-evaluation" class="tab-content">
+        <section class="eval-section">
+            <div class="result-card">
+                <h2 class="card-title">🧪 Detection Evaluation Dashboard</h2>
+                <p class="card-desc">Run the detection engine against a curated test dataset. All metrics are computed live from actual detections — no numbers are invented.</p>
+                <div class="eval-actions">
+                    <button class="btn btn-primary" id="btn-run-eval">▶ Run Evaluation</button>
+                </div>
+                <div class="eval-summary hidden" id="eval-summary">
+                    <!-- Populated dynamically -->
+                </div>
+                <div class="eval-details hidden" id="eval-details">
+                    <h3>Detailed Results</h3>
+                    <div class="eval-table-wrap">
+                        <table id="eval-table" class="eval-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Input</th>
+                                    <th>Expected</th>
+                                    <th>Detected</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eval-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ===== SCRIPTS ===== -->
+    <!-- Module loading order matters: dependencies first -->
+    <script src="confidence.js"></script>
+    <script src="regexDetectors.js"></script>
+    <script src="nerDetector.js"></script>
+    <script src="conflictResolver.js"></script>
+    <script src="overlapResolver.js"></script>
+    <script src="detector.js"></script>
+    <script src="riskClassifier.js"></script>
+    <script src="privacyPolicy.js"></script>
+    <script src="placeholderEngine.js"></script>
+    <script src="sessionManager.js"></script>
+    <script src="contextAnalyzer.js"></script>
+    <script src="sanitizer.js"></script>
+    <script src="promptInjection.js"></script>
+    <script src="outputChecker.js"></script>
+    <script src="ocr.js"></script>
+    <script src="evaluation.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

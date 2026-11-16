@@ -1,0 +1,24 @@
+{
+  "name": "prompt-guard",
+  "version": "1.0.0",
+  "description": "Context-Aware Sensitive Prompt & Image Guard for GenAI",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "build": "cd backend && npm install",
+    "dev": "cd backend && npm run dev"
+  },
+  "keywords": [
+    "privacy",
+    "prompt-injection",
+    "pii-redaction",
+    "guardrails",
+    "genai",
+    "llm-security"
+  ],
+  "author": "Team Keerthana",
+  "license": "MIT",
+  "devDependencies": {
+    "docx": "^9.15.3"
+  }
+}

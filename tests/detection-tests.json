@@ -1,0 +1,139 @@
+[
+  {
+    "id": "DET_001",
+    "prompt": "My email is test@example.com",
+    "expectedEntities": [
+      { "type": "EMAIL", "value": "test@example.com" }
+    ]
+  },
+  {
+    "id": "DET_002",
+    "prompt": "Call me at 9876543210",
+    "expectedEntities": [
+      { "type": "PHONE", "value": "9876543210" }
+    ]
+  },
+  {
+    "id": "DET_003",
+    "prompt": "My PAN is ABCDE1234F",
+    "expectedEntities": [
+      { "type": "PAN", "value": "ABCDE1234F" }
+    ]
+  },
+  {
+    "id": "DET_004",
+    "prompt": "Phone: +91-9876543210",
+    "expectedEntities": [
+      { "type": "PHONE", "value": "+91-9876543210" }
+    ]
+  },
+  {
+    "id": "DET_005",
+    "prompt": "Contact: user@paytm",
+    "expectedEntities": [
+      { "type": "UPI", "value": "user@paytm" }
+    ]
+  },
+  {
+    "id": "DET_006",
+    "prompt": "IFSC: SBIN0001234",
+    "expectedEntities": [
+      { "type": "IFSC", "value": "SBIN0001234" }
+    ]
+  },
+  {
+    "id": "DET_007",
+    "prompt": "Explain photosynthesis",
+    "expectedEntities": []
+  },
+  {
+    "id": "DET_008",
+    "prompt": "What is the capital of India?",
+    "expectedEntities": []
+  },
+  {
+    "id": "DET_009",
+    "prompt": "My name is Rahul and my phone is 9876543210",
+    "expectedEntities": [
+      { "type": "PERSON", "value": "Rahul" },
+      { "type": "PHONE", "value": "9876543210" }
+    ]
+  },
+  {
+    "id": "DET_010",
+    "prompt": "Email me at john@gmail.com, my PAN is BCDEF2345G",
+    "expectedEntities": [
+      { "type": "EMAIL", "value": "john@gmail.com" },
+      { "type": "PAN", "value": "BCDEF2345G" }
+    ]
+  },
+  {
+    "id": "DET_011",
+    "prompt": "Write a leave email to my professor. My name is Rahul, my phone number is 9876543210 and my PAN is ABCDE1234F.",
+    "expectedEntities": [
+      { "type": "PERSON", "value": "Rahul" },
+      { "type": "PHONE", "value": "9876543210" },
+      { "type": "PAN", "value": "ABCDE1234F" }
+    ]
+  },
+  {
+    "id": "DET_012",
+    "prompt": "How does machine learning work?",
+    "expectedEntities": []
+  },
+  {
+    "id": "DET_013",
+    "prompt": "password: MyStr0ngP@ss!",
+    "expectedEntities": [
+      { "type": "PASSWORD", "value": "MyStr0ngP@ss!" }
+    ]
+  },
+  {
+    "id": "DET_014",
+    "prompt": "api_key: sk-1234567890abcdef1234567890abcdef",
+    "expectedEntities": [
+      { "type": "API_KEY", "value": "sk-1234567890abcdef1234567890abcdef" }
+    ]
+  },
+  {
+    "id": "DET_015",
+    "prompt": "UPI ID: rahul.kumar@oksbi",
+    "expectedEntities": [
+      { "type": "UPI", "value": "rahul.kumar@oksbi" }
+    ]
+  },
+  {
+    "id": "DET_016",
+    "prompt": "Send money to priya@ybl",
+    "expectedEntities": [
+      { "type": "UPI", "value": "priya@ybl" }
+    ]
+  },
+  {
+    "id": "DET_017",
+    "prompt": "My PAN is XYZAB1234C and email is contact@company.org",
+    "expectedEntities": [
+      { "type": "PAN", "value": "XYZAB1234C" },
+      { "type": "EMAIL", "value": "contact@company.org" }
+    ]
+  },
+  {
+    "id": "DET_018",
+    "prompt": "The weather is nice today",
+    "expectedEntities": []
+  },
+  {
+    "id": "DET_019",
+    "prompt": "Call +919123456789 for details",
+    "expectedEntities": [
+      { "type": "PHONE", "value": "+919123456789" }
+    ]
+  },
+  {
+    "id": "DET_020",
+    "prompt": "Bank IFSC HDFC0002345 for transfer",
+    "expectedEntities": [
+      { "type": "IFSC", "value": "HDFC0002345" }
+    ]
+  }
+]
