@@ -26,5 +26,18 @@
       "PERSON": false
     },
     "reasoning": "Patient name is not required to summarize medical diagnosis or recommendations."
+  },
+  {
+    "id": "CTX_004",
+    "prompt": "Draft confirmation for transfer to bank account 123456789012 with IFSC SBIN0001234.",
+    "entities": ["BANK_ACCOUNT", "IFSC"],
+    "expectedNecessity": {
+      "BANK_ACCOUNT": false,
+      "IFSC": false
+    },
+    "expectedRecommendation": {
+      "BANK_ACCOUNT": "MASK"
+    },
+    "reasoning": "Bank account number must be masked rather than kept unmasked, even in a financial transfer task."
   }
 ]

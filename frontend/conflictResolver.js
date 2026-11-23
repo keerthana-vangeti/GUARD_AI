@@ -4,13 +4,18 @@
    canonical detection using priority rules.
    ============================================================ */
 
+if (typeof require !== 'undefined') {
+    if (typeof Confidence === 'undefined') var Confidence = require('./confidence');
+}
+
 const ConflictResolver = (() => {
     'use strict';
 
     // Structured entity types that regex handles well
     const STRUCTURED_TYPES = new Set([
         'EMAIL', 'PHONE', 'PAN', 'AADHAAR', 'UPI',
-        'BANK_ACCOUNT', 'IFSC', 'CARD_NUMBER', 'API_KEY', 'PASSWORD'
+        'BANK_ACCOUNT', 'IFSC', 'CARD_NUMBER', 'API_KEY', 'PASSWORD',
+        'TRANSACTION_ID', 'IP_ADDRESS'
     ]);
 
     /**
@@ -67,8 +72,17 @@ const ConflictResolver = (() => {
                     wasConflicted = true;
                     nerUsed.add(i);
 
+                    // Rule 0: If NER detected full ADDRESS and regex detected HOUSE_NO or PIN_CODE, prefer full ADDRESS
+                    if (nerDet.type === 'ADDRESS' && (regexDet.type === 'HOUSE_NO' || regexDet.type === 'PIN_CODE')) {
+                        merged.push({
+                            ...nerDet,
+                            confidence: Confidence.merge(regexDet.confidence, nerDet.confidence),
+                            sources: [nerDet.source || 'ner', 'regex'],
+                            regexType: regexDet.type
+                        });
+                    }
                     // Rule 1: Prefer structured regex detection with high confidence
-                    if (STRUCTURED_TYPES.has(regexDet.type) && regexDet.confidence >= 0.80) {
+                    else if (STRUCTURED_TYPES.has(regexDet.type) && regexDet.confidence >= 0.80) {
                         // Keep regex type but merge source info
                         merged.push({
                             ...regexDet,
@@ -120,3 +134,7 @@ const ConflictResolver = (() => {
 
     return { resolve, spansOverlap, overlapRatio };
 })();
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = ConflictResolver;
+}

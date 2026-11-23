@@ -21,8 +21,10 @@ const RiskClassifier = (() => {
         'AADHAAR':      'HIGH',
         'UPI':          'HIGH',
         'BANK_ACCOUNT': 'HIGH',
+        'TRANSACTION_ID': 'HIGH',
         'IFSC':         'MEDIUM',
         'CARD_NUMBER':  'HIGH',
+        'IP_ADDRESS':   'MEDIUM',
         'API_KEY':      'CRITICAL',
         'PASSWORD':     'CRITICAL',
         'PIN_CODE':     'MEDIUM',
@@ -140,3 +142,7 @@ const RiskClassifier = (() => {
         RISK_ORDER
     };
 })();
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = RiskClassifier;
+}

@@ -135,5 +135,58 @@
     "expectedEntities": [
       { "type": "IFSC", "value": "HDFC0002345" }
     ]
+  },
+  {
+    "id": "DET_021",
+    "prompt": "Transaction ID: TXN9876543210 for billing",
+    "expectedEntities": [
+      { "type": "TRANSACTION_ID", "value": "TXN9876543210" }
+    ]
+  },
+  {
+    "id": "DET_022",
+    "prompt": "Server IP is 192.168.1.100",
+    "expectedEntities": [
+      { "type": "IP_ADDRESS", "value": "192.168.1.100" }
+    ]
+  },
+  {
+    "id": "DET_023",
+    "prompt": "Delivery address is Flat 201, Lotus Layout, Indiranagar, Bangalore",
+    "expectedEntities": [
+      { "type": "ADDRESS", "value": "Flat 201, Lotus Layout, Indiranagar, Bangalore" }
+    ]
+  },
+  {
+    "id": "DET_024",
+    "prompt": "Transfer to account 987654321012 with IFSC SBIN0001234",
+    "expectedEntities": [
+      { "type": "BANK_ACCOUNT", "value": "987654321012" },
+      { "type": "IFSC", "value": "SBIN0001234" }
+    ]
+  },
+  {
+    "id": "DET_025",
+    "prompt": "Pay via UPI ID: priya.s@okhdfcbank",
+    "expectedEntities": [
+      { "type": "UPI", "value": "priya.s@okhdfcbank" }
+    ]
+  },
+  {
+    "id": "DET_026",
+    "prompt": "Aadhaar number: 3456 7890 1234",
+    "expectedEntities": [
+      { "type": "AADHAAR", "value": "3456 7890 1234" }
+    ]
+  },
+  {
+    "id": "DET_027",
+    "prompt": "Payee: Rahul Sharma, account no 123456789012, IFSC: SBIN0001234, email rahul@test.com",
+    "expectedEntities": [
+      { "type": "PERSON", "value": "Rahul Sharma" },
+      { "type": "BANK_ACCOUNT", "value": "123456789012" },
+      { "type": "IFSC", "value": "SBIN0001234" },
+      { "type": "EMAIL", "value": "rahul@test.com" }
+    ]
   }
 ]

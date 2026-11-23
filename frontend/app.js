@@ -774,8 +774,25 @@
             try { data = await response.json(); } catch (_) { data = {}; }
 
             if (!response.ok) {
-                const msg = data.message || data.error || `Server error: ${response.status}`;
-                throw new Error(msg);
+                hideLoading();
+                showResults();
+                DOM.responseCard.classList.remove('hidden');
+                const errTitle = response.status === 504 ? 'Gemini Request Timed Out (504)' :
+                    (response.status === 503 ? 'Gemini Service Temporarily Unavailable (503)' :
+                    (response.status === 429 ? 'Gemini Rate Limit Exceeded (429)' : `AI Generation Failed (${response.status})`));
+                const errMsg = data.message || data.error || `Server returned error status ${response.status}`;
+                const errDetails = data.details ? `<br><small style="color:var(--text-secondary);margin-top:0.5rem;display:block;">Details: ${escapeHtml(data.details)}</small>` : '';
+
+                DOM.aiResponseText.innerHTML = `<div style="color:var(--status-danger, #ef4444); padding:1rem; border:1px solid var(--status-danger, #ef4444); border-radius:8px; background:rgba(239,68,68,0.06); line-height:1.5;">
+                    <strong style="font-size:1.05rem;">⚠️ ${escapeHtml(errTitle)}</strong><br><br>
+                    ${escapeHtml(errMsg)}
+                    ${errDetails}
+                    <div style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid rgba(239,68,68,0.2); font-size:0.875rem; color:var(--text-secondary);">
+                        🛡️ <strong>Privacy Guaranteed:</strong> Your input was safely audited and sanitized on your device. Raw sensitive values were never transmitted.
+                    </div>
+                </div>`;
+                DOM.responseMeta.innerHTML = `<span style="color:var(--status-danger, #ef4444)">❌ Generation halted due to upstream AI service error</span>`;
+                return;
             }
 
             const responseText = data.response || '';
@@ -818,9 +835,14 @@
                 ? formatMarkdownResponse(finalResponse)
                 : '<em style="color:var(--text-secondary)">The AI returned an empty response.</em>';
 
-            const modelBadge = (data.provider && data.provider.includes('Gemini'))
-                ? `<div class="ai-model-pill">✨ Powered by ${escapeHtml(data.provider)} (${escapeHtml(data.model || 'gemini-flash-lite-latest')})</div>`
-                : (data.provider ? `<div class="ai-model-pill" style="color:var(--text-secondary);border-color:var(--border-subtle);background:var(--bg-elevated)">🤖 ${escapeHtml(data.provider)}</div>` : '');
+            let modelBadge = '';
+            if (data.isSimulated) {
+                modelBadge = `<div class="ai-model-pill" style="color:var(--status-warning, #f59e0b); border-color:var(--status-warning, #f59e0b); background:rgba(245,158,11,0.1); margin-bottom:1rem;">⚠️ ${escapeHtml(data.provider || 'Simulated LLM (Offline Mode)')} — <em>Demonstration Fallback (Not genuine Gemini output)</em></div>`;
+            } else if (data.provider && data.provider.includes('Gemini')) {
+                modelBadge = `<div class="ai-model-pill">✨ Powered by ${escapeHtml(data.provider)} (${escapeHtml(data.model || 'gemini-2.5-flash')})</div>`;
+            } else if (data.provider) {
+                modelBadge = `<div class="ai-model-pill" style="color:var(--text-secondary); border-color:var(--border-subtle); background:var(--bg-elevated)">🤖 ${escapeHtml(data.provider)}</div>`;
+            }
 
             DOM.aiResponseText.innerHTML = modelBadge + formattedHtml;
 

@@ -3,6 +3,10 @@
    privacy layer, applying user decisions + policy enforcement.
    ============================================================ */
 
+if (typeof require !== 'undefined') {
+    if (typeof PrivacyPolicy === 'undefined') var PrivacyPolicy = require('./privacyPolicy');
+}
+
 const Sanitizer = (() => {
     'use strict';
 
@@ -181,3 +185,7 @@ const Sanitizer = (() => {
 
     return { sanitize, verify };
 })();
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = Sanitizer;
+}
