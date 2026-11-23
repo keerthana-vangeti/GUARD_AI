@@ -4,14 +4,6 @@
    Returns the final canonical detection list.
    ============================================================ */
 
-if (typeof require !== 'undefined') {
-    if (typeof RegexDetectors === 'undefined') var RegexDetectors = require('./regexDetectors');
-    if (typeof NERDetector === 'undefined') var NERDetector = require('./nerDetector');
-    if (typeof ConflictResolver === 'undefined') var ConflictResolver = require('./conflictResolver');
-    if (typeof OverlapResolver === 'undefined') var OverlapResolver = require('./overlapResolver');
-    if (typeof Confidence === 'undefined') var Confidence = require('./confidence');
-}
-
 var Detector = (() => {
     'use strict';
 

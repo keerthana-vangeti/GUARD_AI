@@ -18,17 +18,34 @@
 const assert = require('assert');
 const path = require('path');
 
-const RegexDetectors = require('../frontend/regexDetectors');
-const NERDetector = require('../frontend/nerDetector');
-const ConflictResolver = require('../frontend/conflictResolver');
-const OverlapResolver = require('../frontend/overlapResolver');
-const Confidence = require('../frontend/confidence');
-const RiskClassifier = require('../frontend/riskClassifier');
-const PrivacyPolicy = require('../frontend/privacyPolicy');
-const ContextAnalyzer = require('../frontend/contextAnalyzer');
-const PlaceholderEngine = require('../frontend/placeholderEngine');
-const Sanitizer = require('../frontend/sanitizer');
-const Detector = require('../frontend/detector');
+// Load all modules and expose as globals so detector.js can reference them
+// (browser uses <script> tags; Node.js needs explicit globals)
+global.Confidence       = require('../frontend/confidence');
+global.RegexDetectors   = require('../frontend/regexDetectors');
+global.NERDetector      = require('../frontend/nerDetector');
+global.ConflictResolver = require('../frontend/conflictResolver');
+global.OverlapResolver  = require('../frontend/overlapResolver');
+global.RiskClassifier   = require('../frontend/riskClassifier');
+global.PrivacyPolicy    = require('../frontend/privacyPolicy');
+global.ContextAnalyzer  = require('../frontend/contextAnalyzer');
+global.PlaceholderEngine= require('../frontend/placeholderEngine');
+global.Sanitizer        = require('../frontend/sanitizer');
+
+// detector.js references the above as globals — must be loaded after them
+global.Detector         = require('../frontend/detector');
+
+// Local aliases for test code
+const RegexDetectors    = global.RegexDetectors;
+const NERDetector       = global.NERDetector;
+const ConflictResolver  = global.ConflictResolver;
+const OverlapResolver   = global.OverlapResolver;
+const Confidence        = global.Confidence;
+const RiskClassifier    = global.RiskClassifier;
+const PrivacyPolicy     = global.PrivacyPolicy;
+const ContextAnalyzer   = global.ContextAnalyzer;
+const PlaceholderEngine = global.PlaceholderEngine;
+const Sanitizer         = global.Sanitizer;
+const Detector          = global.Detector;
 const { getSimulatedResponse, DEFAULT_CANDIDATE_MODELS } = require('../backend/services/llmService');
 
 let passedTests = 0;

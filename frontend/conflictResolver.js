@@ -4,10 +4,6 @@
    canonical detection using priority rules.
    ============================================================ */
 
-if (typeof require !== 'undefined') {
-    if (typeof Confidence === 'undefined') var Confidence = require('./confidence');
-}
-
 const ConflictResolver = (() => {
     'use strict';
 
