@@ -12,7 +12,7 @@ if (typeof require !== 'undefined') {
     if (typeof Confidence === 'undefined') var Confidence = require('./confidence');
 }
 
-const Detector = (() => {
+var Detector = (() => {
     'use strict';
 
     /**
