@@ -64,6 +64,16 @@ const PrivacyPolicy = (() => {
             balanced: { allowKeep: true,  defaultAction: 'MASK',   requireExplicitConsent: true,  neverTransmit: false },
             strict:   { allowKeep: false, defaultAction: 'REMOVE', requireExplicitConsent: true,  neverTransmit: true }
         },
+        TRANSACTION_ID: {
+            basic:    { allowKeep: true,  defaultAction: 'MASK',   requireExplicitConsent: false, neverTransmit: false },
+            balanced: { allowKeep: false, defaultAction: 'MASK',   requireExplicitConsent: true,  neverTransmit: false },
+            strict:   { allowKeep: false, defaultAction: 'REMOVE', requireExplicitConsent: true,  neverTransmit: true }
+        },
+        IP_ADDRESS: {
+            basic:    { allowKeep: true,  defaultAction: 'KEEP',   requireExplicitConsent: false, neverTransmit: false },
+            balanced: { allowKeep: true,  defaultAction: 'MASK',   requireExplicitConsent: false, neverTransmit: false },
+            strict:   { allowKeep: false, defaultAction: 'REMOVE', requireExplicitConsent: true,  neverTransmit: false }
+        },
         PHONE: {
             basic:    { allowKeep: true,  defaultAction: 'KEEP',   requireExplicitConsent: false, neverTransmit: false },
             balanced: { allowKeep: true,  defaultAction: 'MASK',   requireExplicitConsent: false, neverTransmit: false },
@@ -211,3 +221,7 @@ const PrivacyPolicy = (() => {
         getRestrictionReason
     };
 })();
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = PrivacyPolicy;
+}

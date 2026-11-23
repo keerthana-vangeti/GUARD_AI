@@ -166,3 +166,7 @@ const PlaceholderEngine = (() => {
 
     return { createInstance };
 })();
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = PlaceholderEngine;
+}

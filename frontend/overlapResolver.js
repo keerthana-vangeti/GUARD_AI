@@ -44,19 +44,25 @@ const OverlapResolver = (() => {
         }
 
         // If one contains the other, prefer the more specific (smaller) span
-        // unless the larger span has a more specific type
+        // unless the larger span is ADDRESS containing HOUSE_NO or PIN_CODE
         if (contains(a, b) && !contains(b, a)) {
-            // b is contained in a — prefer b (more precise) if confidence is similar
+            if (a.type === 'ADDRESS' && (b.type === 'HOUSE_NO' || b.type === 'PIN_CODE')) {
+                return a;
+            }
             return b;
         }
         if (contains(b, a) && !contains(a, b)) {
+            if (b.type === 'ADDRESS' && (a.type === 'HOUSE_NO' || a.type === 'PIN_CODE')) {
+                return b;
+            }
             return a;
         }
 
         // Equal or similar confidence — prefer regex source for structured types
         const structuredTypes = new Set([
             'EMAIL', 'PHONE', 'PAN', 'AADHAAR', 'UPI',
-            'BANK_ACCOUNT', 'IFSC', 'CARD_NUMBER', 'API_KEY', 'PASSWORD'
+            'BANK_ACCOUNT', 'IFSC', 'CARD_NUMBER', 'API_KEY', 'PASSWORD',
+            'TRANSACTION_ID', 'IP_ADDRESS'
         ]);
 
         if (structuredTypes.has(a.type) && !structuredTypes.has(b.type)) return a;
@@ -132,3 +138,7 @@ const OverlapResolver = (() => {
 
     return { resolve, overlaps, contains, prefer };
 })();
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = OverlapResolver;
+}

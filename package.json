@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node backend/server.js",
     "build": "cd backend && npm install",
-    "dev": "cd backend && npm run dev"
+    "dev": "cd backend && npm run dev",
+    "test": "node tests/run-all-tests.js"
   },
   "keywords": [
     "privacy",
