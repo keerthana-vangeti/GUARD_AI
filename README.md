@@ -135,7 +135,7 @@ If the deep learning pipeline cannot initialize (e.g., low memory, offline mode,
 When multiple engines evaluate the same sentence, boundary overlaps inevitably occur:
 * **Conflict Resolution**: Structured types (e.g., `EMAIL`, `PAN`, `UPI`, `IFSC`, `TRANSACTION_ID`) are given precedence over general NER labels. However, an explicit override ensures that a multi-word `ADDRESS` span takes precedence over an internal isolated `HOUSE_NO` detection.
 * **Span Overlap Resolution**: Calculates intersection ratios. Where one span fully encompasses another without conflict, the larger encompassing entity is preserved; otherwise, the detection with the higher confidence score and greater semantic specificity is retained.
-* **Confidence Filtering**: Detections are assigned confidence weights ($0.0$ to $1.0$). Entities meeting or exceeding $0.90$ are classified as high confidence; items between $0.70$ and $0.89$ are flagged for user confirmation; detections below $0.70$ are discarded.
+* **Confidence Thresholding**: Detections are assigned normalized heuristic scores ($0.0$ to $1.0$) configured per detector type (representing rule-based match certainty rather than statistical posterior probabilities). Scores $\ge 0.90$ are treated as high confidence; scores between $0.70$ and $0.89$ prompt user confirmation; detections $< 0.70$ are discarded.
 
 ---
 
@@ -290,10 +290,11 @@ GuardAI supports document-assisted prompting through client-side visual optical 
 ```
 
 ### Technical Distinction: OCR Text vs. Visual Image Pixels
-It is critical to distinguish between OCR text processing and image pixel data:
+It is critical to distinguish between OCR text processing and raw visual image data:
 1. **Protected (Extracted Text)**: Text extracted from the image via Tesseract.js is fed into the GuardAI detection pipeline. Detected PII is sanitized according to the selected policy before being inserted into the prompt body.
-2. **Raw Visual Tokens (Attached Image Payloads)**: When users attach image files, the application converts the file to base64 format and transmits it alongside the prompt to Gemini Vision for multimodal queries.
-3. **Downstream Protection via Output Auditing**: Because the raw image pixels are provided directly to the multimodal model, the model may read numbers directly from the image. GuardAI counters this via its **Output Checker**, which intercepts the model's textual response, flags any leaked values against the session memory, and prompts the user to redact them.
+2. **Raw Visual Tokens (Attached Image Payloads)**: When users attach image files, the application converts the file to base64 format and transmits it directly alongside the prompt to Gemini Vision for multimodal queries.
+3. **Downstream Response Auditing**: Because the raw image pixels are provided directly to the multimodal model, the model may read numbers directly from the image. GuardAI counters this via its **Output Checker**, which intercepts the model's textual response, flags any leaked values against the session memory, and prompts the user to redact them.
+4. **Security Boundary Limitation**: Output checking **does not prevent upstream exposure** of raw image pixels to the cloud API provider. For total visual confidentiality, pixel-level canvas blurring is required before uploading.
 
 ---
 
@@ -323,7 +324,7 @@ GATEWAY (Express.js Backend)
 | **Direct PII Exfiltration to Cloud LLMs** | Client-side detection & masking prevents raw PII from being included in prompt text payloads. | Raw image pixels submitted for multimodal queries are visible to the vision API. |
 | **System Prompt Injection & Jailbreaks** | Client-side pattern scanner detects phrases attempting to bypass privacy rules or reveal mapping tables. | Heuristic regex scanner cannot guarantee 100% defense against novel semantic evasion or linguistic obfuscation. |
 | **Server-Side Data Harvesting** | Zero-log audit middleware logs only HTTP status codes and response latencies; prompt bodies are not logged. | Server memory temporarily processes the sanitized payload before forwarding to the upstream API. |
-| **Volatile Memory Extraction** | Session mappings exist only in volatile JavaScript heap memory and are flushed on session reset. | A compromised client workstation (e.g., infected with keyloggers or memory scrapers) can inspect local memory. |
+| **Volatile Memory Extraction** | Session mappings exist only in volatile JavaScript heap memory and are dereferenced on session reset. | Standard browser engines rely on automatic garbage collection; they do not perform cryptographic zero-fill wipes of volatile RAM. A compromised workstation remains a risk. |
 | **Denial of Service / Quota Exhaustion**| Backend IP rate limiter enforces a threshold of 100 requests per 15-minute window. | Distributed denial-of-service (DDoS) attacks require upstream reverse proxy filtering (e.g., Cloudflare). |
 | **Upstream Service Outages (HTTP 503)** | Exponential backoff across candidate models, 35s timeout aborts, and transparent Simulated LLM fallback. | Simulated mode provides fixed demonstrative responses rather than real-time generative capabilities. |
 
@@ -357,25 +358,29 @@ Running the integrated test suite via `npm test` (`node tests/run-all-tests.js`)
 
 ### Empirical Benchmark Datasets
 
-| Dataset | Scope & Description | Test Cases | TP | FP | FN | Precision | Recall | $F_1$-Score |
-|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| `tests/detection-tests.json` | Isolated identifier tests (PAN, Aadhaar, UPI, Passwords, etc.) | 27 | 32 | 0 | 0 | **1.0000** | **1.0000** | **1.0000** |
-| `tests/evaluation-tests.json`| Complex mixed-entity scenarios with overlapping context | 5 | 11 | 1 | 2 | **0.9167** | **0.8462** | **0.8800** |
+| Dataset | Scope & Description | Test Prompts | Target Entities | TP | FP | FN | Precision | Recall | $F_1$-Score |
+|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| `tests/detection-tests.json` | Isolated identifier tests (PAN, Aadhaar, UPI, Passwords, etc.) | 27 | 32 | 32 | 0 | 0 | **1.0000** | **1.0000** | **1.0000** |
+| `tests/evaluation-tests.json`| Complex mixed-entity scenarios with overlapping context | 5 | 14 | 11 | 1 | 2 | **0.9167** | **0.8462** | **0.8800** |
 
-> **Scientific Transparency Note**: High scores on unit benchmark sets reflect adherence to tested syntactic formats under controlled conditions. Real-world performance will encounter unexpected entity variations, optical OCR distortions, and dialectal idiosyncrasies that standard regular expressions and baseline NER models cannot capture with 100% accuracy.
+> **Scientific Transparency & Evaluation Boundaries**:
+> * **Test Prompts vs. Target Entities**: Each test prompt may contain multiple entities. In `detection-tests.json`, 27 prompts contain 32 total target entity instances across all formats (100% extracted). In `evaluation-tests.json`, 5 complex prompts contain 14 target entities (11 extracted, 1 false positive, 2 false negatives due to overlapping geographic entity boundaries).
+> * **Synthetic vs. Real-World Variance**: High performance on structured synthetic benchmark suites demonstrates adherence to expected syntactic patterns under laboratory conditions. Universal real-world detection will encounter non-standard notations, optical character distortion in OCR, and cultural phrasing variations that cannot achieve 100% accuracy via regex or baseline tokenizers alone.
 
 ---
 
 ## Comparative Architecture Analysis
 
-| Feature Dimension | Cloud DLP / Server-Side Proxies (e.g., Presidio / AWS) | Standard AI Chatbot Extensions | GuardAI Gateway (This Project) |
+| Feature Dimension | Server-Side DLP / Proxies (e.g., Presidio*, AWS Comprehend) | Standard Direct LLM Interfaces | GuardAI Client Gateway (This Project) |
 |:---|:---|:---|:---|
-| **Privacy Enforcement Boundary** | Centralized server (Raw PII must cross the network to be scrubbed) | None (Raw prompts sent directly to model provider) | **Client-side browser runtime (Scrubbed before network transit)** |
+| **Privacy Enforcement Boundary** | Centralized server / daemon (Raw PII leaves browser to reach scanning daemon) | None (Raw prompts sent directly to model provider) | **Client-side browser runtime (Scrubbed locally before network transit)** |
 | **OCR Processing Model** | Cloud service endpoint (e.g., AWS Textract / Cloud Vision) | None (Image sent raw to LLM) | **Client-side WebWorker via Tesseract.js** |
-| **Indian Identifier Support** | Limited without custom plugins | Not supported | **Native PAN, Aadhaar, UPI, Voter ID, IFSC, PIN** |
+| **Indian Identifier Support** | Requires custom community recognizers | Not supported | **Native PAN, Aadhaar, UPI, Voter ID, IFSC, PIN** |
 | **Context-Aware Reasoning** | Static pattern redaction | None | **Task-based necessity analysis (8 domain schemas)** |
 | **Output Leak Auditing** | Input-only inspection | None | **Bidirectional (Input filtering + Output auditing)** |
 | **Offline Resilience** | Non-functional without backend infrastructure | Fails on network error | **Graceful failover to Simulated LLM & local heuristics** |
+
+*\*Note on Self-Hosting*: Solutions such as Microsoft Presidio are open-source and can be deployed on private on-premise infrastructure or within local containers. However, they remain centralized services requiring client-to-service communication. GuardAI's primary distinction is executing detection and sanitization directly within the user's browser runtime before any network call occurs.
 
 ---
 
