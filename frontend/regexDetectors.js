@@ -79,8 +79,25 @@ const RegexDetectors = (() => {
             return m ? m[1].trim() : match.trim();
         },
         validate: (match, text, start) => {
-            const before = text ? text.substring(Math.max(0, start - 30), start).toLowerCase() : '';
+            // If the match itself includes explicit Aadhaar keyword, it is valid without before-context checks
+            if (/aadhaar|aadhar|uidai/i.test(match)) {
+                const m = /([2-9]\d{3}[\s\-]?\d{4}[\s\-]?\d{4})/.exec(match);
+                if (!m) return false;
+                const digits = m[1].replace(/[\s\-]/g, '');
+                return digits.length === 12 && digits[0] !== '0' && digits[0] !== '1';
+            }
+
+            // For unanchored 12-digit numbers, look backward only within the current sentence (do not cross punctuation)
+            const sentenceBoundary = Math.max(
+                text.lastIndexOf('.', start),
+                text.lastIndexOf('!', start),
+                text.lastIndexOf('?', start),
+                text.lastIndexOf('\n', start)
+            );
+            const checkStart = sentenceBoundary !== -1 ? Math.max(sentenceBoundary + 1, start - 30) : Math.max(0, start - 30);
+            const before = text ? text.substring(checkStart, start).toLowerCase() : '';
             if (/(?:account|a\/c|acct|phone|mobile|call|tel|utr|txn|ref|\+)/i.test(before)) return false;
+
             const m = /([2-9]\d{3}[\s\-]?\d{4}[\s\-]?\d{4})/.exec(match);
             if (!m) return false;
             const digits = m[1].replace(/[\s\-]/g, '');
@@ -150,17 +167,17 @@ const RegexDetectors = (() => {
     /** Transaction Reference / UTR ID */
     const transactionIdDetector = {
         type: 'TRANSACTION_ID',
-        pattern: /\b(?:(?:txn|transaction|trans|payment|ref|reference|utr|imps|neft|rtgs)[\s._-]*(?:id|no\.?|num|number|#)?[\s:=-]+)([A-Za-z0-9]{6,25})\b|\b(?:UTR|IMPS|NEFT)[\s:=-]*([A-Za-z0-9]{12,22})\b/gi,
+        pattern: /\b(?:(?:txn|transaction|trans|payment|ref|reference)[\s._-]*(?:id|no\.?|num|number|#)?[\s:=-]+)([A-Za-z0-9]{6,25})\b|\b((?:UTR|IMPS|NEFT|RTGS)[A-Za-z0-9]{10,22})\b|\b(?:UTR|IMPS|NEFT|RTGS)[\s:=-]+([A-Za-z0-9]{10,22})\b/gi,
         confidence: 0.92,
         description: 'Transaction Reference ID (UTR / IMPS / Txn ID)',
         extractValue: (match) => {
-            const m = /\b(?:(?:txn|transaction|trans|payment|ref|reference|utr|imps|neft|rtgs)[\s._-]*(?:id|no\.?|num|number|#)?[\s:=-]+)([A-Za-z0-9]{6,25})\b|\b(?:UTR|IMPS|NEFT)[\s:=-]*([A-Za-z0-9]{12,22})\b/i.exec(match);
-            return m ? (m[1] || m[2]) : match;
+            const m = /\b(?:(?:txn|transaction|trans|payment|ref|reference)[\s._-]*(?:id|no\.?|num|number|#)?[\s:=-]+)([A-Za-z0-9]{6,25})\b|\b((?:UTR|IMPS|NEFT|RTGS)[A-Za-z0-9]{10,22})\b|\b(?:UTR|IMPS|NEFT|RTGS)[\s:=-]+([A-Za-z0-9]{10,22})\b/i.exec(match);
+            return m ? (m[1] || m[2] || m[3]) : match;
         },
         validate: (match) => {
-            const m = /\b(?:(?:txn|transaction|trans|payment|ref|reference|utr|imps|neft|rtgs)[\s._-]*(?:id|no\.?|num|number|#)?[\s:=-]+)([A-Za-z0-9]{6,25})\b|\b(?:UTR|IMPS|NEFT)[\s:=-]*([A-Za-z0-9]{12,22})\b/i.exec(match);
+            const m = /\b(?:(?:txn|transaction|trans|payment|ref|reference)[\s._-]*(?:id|no\.?|num|number|#)?[\s:=-]+)([A-Za-z0-9]{6,25})\b|\b((?:UTR|IMPS|NEFT|RTGS)[A-Za-z0-9]{10,22})\b|\b(?:UTR|IMPS|NEFT|RTGS)[\s:=-]+([A-Za-z0-9]{10,22})\b/i.exec(match);
             if (!m) return false;
-            const val = (m[1] || m[2]).toLowerCase();
+            const val = (m[1] || m[2] || m[3]).toLowerCase();
             // Must contain at least one digit to be a transaction ID
             if (!/\d/.test(val)) return false;
             // Reject common words
@@ -209,12 +226,13 @@ const RegexDetectors = (() => {
     /** API key / Secret: long alphanumeric strings with key-context or known prefixes */
     const apiKeyDetector = {
         type: 'API_KEY',
-        pattern: /(?:(?:api[_-]?key|api[_-]?secret|access[_-]?key|secret|token)[\s:="']*(?:is\s*)?([A-Za-z0-9_./+\-]{16,}))|(?:\b(sk_live_[A-Za-z0-9_]{16,}|sk_test_[A-Za-z0-9_]{16,}|ghp_[A-Za-z0-9]{30,}|AIzaSy[A-Za-z0-9_\-]{33})\b)/gi,
+        pattern: /(?:(?:api[\s_-]?key|api[\s_-]?secret|access[\s_-]?key|secret|token)[\s:="']*(?:is\s*)?([A-Za-z0-9_./+\-]{12,}))|(?:\b(sk_live_[A-Za-z0-9_]{16,}|sk_test_[A-Za-z0-9_]{16,}|sk-proj-[A-Za-z0-9_\-]{12,}|sk-[A-Za-z0-9_\-]{20,}|ghp_[A-Za-z0-9]{30,}|AIzaSy[A-Za-z0-9_\-]{33})\b)/gi,
         confidence: 0.93,
         description: 'API Key / Secret / Access Token',
         extractValue: (match) => {
-            const m = /(?:(?:api[_-]?key|api[_-]?secret|access[_-]?key|secret|token)[\s:="']*(?:is\s*)?([A-Za-z0-9_./+\-]{16,}))|(?:\b(sk_live_[A-Za-z0-9_]{16,}|sk_test_[A-Za-z0-9_]{16,}|ghp_[A-Za-z0-9]{30,}|AIzaSy[A-Za-z0-9_\-]{33})\b)/i.exec(match);
-            return m ? (m[1] || m[2]) : match;
+            const m = /(?:(?:api[\s_-]?key|api[\s_-]?secret|access[\s_-]?key|secret|token)[\s:="']*(?:is\s*)?([A-Za-z0-9_./+\-]{12,}))|(?:\b(sk_live_[A-Za-z0-9_]{16,}|sk_test_[A-Za-z0-9_]{16,}|sk-proj-[A-Za-z0-9_\-]{12,}|sk-[A-Za-z0-9_\-]{20,}|ghp_[A-Za-z0-9]{30,}|AIzaSy[A-Za-z0-9_\-]{33})\b)/i.exec(match);
+            const val = m ? (m[1] || m[2]) : match;
+            return val ? val.replace(/[.,;:!]+$/, '') : val;
         }
     };
 

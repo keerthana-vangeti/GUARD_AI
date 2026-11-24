@@ -173,6 +173,10 @@ const NERDetector = (() => {
             // Natural sentence context with prepositions:
             // "Send report to Rahul Sharma", "Write leave email for employee Vikram Seth", "Verify PAN for Priya Sharma"
             /\b(?:for|to|with|by|from|contact|call|meet)\s+(?:employee|patient|student|client|user\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2})\b/g,
+            // Kinship and personal relationship anchors: "my father, Suresh Reddy", "her mother Priya", "brother Ramesh Kumar", "father's name is..."
+            /\b(?:(?:my|his|her|their|our)\s+)?(?:father|mother|brother|sister|son|daughter|husband|wife|spouse|parent|guardian|friend|colleague|cousin|uncle|aunt|relative)(?:'s\s+name)?\s*[:=,]?\s*(?:is\s*)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2})\b/gi,
+            // Standalone Indian full names with common surname markers (e.g. "Suresh Reddy", "Anand Verma", "Priya Nair")
+            /\b([A-Z][a-z]{2,15}\s+(?:Reddy|Sharma|Verma|Gupta|Kumar|Singh|Patel|Iyer|Nair|Rao|Mehta|Joshi|Shah|Das|Sen|Ghosh|Mukherjee|Chatterjee|Bose|Banerjee|Pillai|Menon|Choudhury|Naidu|Yadav|Mishra|Pandey|Trivedi|Bhat|Kulkarni))\b/g,
             // Initial-dot Indian names: "M. Shruthi", "V. Madhu Reddy", "K. Rahul"
             /\b([A-Z]\.\s?[A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\b/g
         ];
