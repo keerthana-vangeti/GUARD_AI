@@ -10,10 +10,6 @@
    Relevance does NOT automatically mean disclosure is safe!
    ============================================================ */
 
-if (typeof require !== 'undefined') {
-    if (typeof RiskClassifier === 'undefined') var RiskClassifier = require('./riskClassifier');
-    if (typeof PrivacyPolicy === 'undefined') var PrivacyPolicy = require('./privacyPolicy');
-}
 
 const ContextAnalyzer = (() => {
     'use strict';
